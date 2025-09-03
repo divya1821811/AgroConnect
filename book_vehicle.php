@@ -94,7 +94,7 @@ mysqli_close($conn);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Vehicle - AgroConnect</title>
-    <link rel="stylesheet" href="css/style.css">
+   
     <style>
         /* Specific styles for booking page */
         body {

@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['accept_booking'])) {
 
 // --- Fetch Pending Bookings for the Logged-in Driver ---
 $sql_pending = "SELECT b.id AS booking_id, b.booking_date, b.message,
-                       u.name AS user_name, u.email AS user_email
+                        u.name AS user_name, u.email AS user_email
                 FROM bookings b
                 JOIN users u ON b.user_id = u.id
                 WHERE b.driver_id = ? AND b.status = 'pending'
@@ -66,7 +66,7 @@ if ($stmt_pending = mysqli_prepare($conn, $sql_pending)) {
 
 // --- Fetch Accepted/Confirmed Bookings for the Logged-in Driver ---
 $sql_accepted = "SELECT b.id AS booking_id, b.booking_date, b.message, b.status,
-                       u.name AS user_name, u.email AS user_email
+                        u.name AS user_name, u.email AS user_email
                 FROM bookings b
                 JOIN users u ON b.user_id = u.id
                 WHERE b.driver_id = ? AND (b.status = 'confirmed' OR b.status = 'completed' OR b.status = 'cancelled')
@@ -98,143 +98,334 @@ mysqli_close($conn);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Driver Dashboard - AgroConnect</title>
-    <link rel="stylesheet" href="css/style.css">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* Shared theme variables for consistency */
+        :root {
+            --primary-green: #28a745;
+            --secondary-green: #218838;
+            --light-green: #e9f5e9;
+            --primary-blue: #007bff;
+            --secondary-blue: #0056b3;
+            --light-blue: #e6f7ff;
+            --white: #ffffff;
+            --dark: #333333;
+            --light-gray: #f0f5f0; /* Consistent body background */
+            --medium-gray: #e0e0e0;
+            --dark-gray: #757575;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --info: #17a2b8;
+            --transition: all 0.3s ease;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.15);
+            --card-radius: 10px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif; /* Consistent font */
+        }
+
+        body {
+            background-color: var(--light-gray);
+            color: var(--dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex; /* For centering content */
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
         /* Specific styles for driver dashboard */
         .driver-dashboard-container {
             max-width: 900px;
-            margin: 30px auto;
-            padding: 25px;
-            background-color: #fcfcfc;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            width: 100%; /* Ensure it takes full width up to max */
+            background-color: var(--white);
+            padding: 30px; /* Increased padding */
+            border-radius: var(--card-radius); /* Consistent border-radius */
+            box-shadow: var(--shadow); /* Consistent shadow */
             text-align: left;
+            animation: fadeIn 0.8s ease-out; /* Add a fade-in animation */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .driver-dashboard-container h2 {
+            color: var(--primary-green); /* Themed green */
+            margin-top: 0;
+            margin-bottom: 25px; /* Increased margin */
+            font-size: 2.2em; /* Larger heading */
+            border-bottom: 2px solid var(--medium-gray); /* Themed border */
+            padding-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .driver-dashboard-container h2 i {
+            font-size: 1.2em;
         }
 
         .section-title {
-            color: #343a40;
+            color: var(--primary-green); /* Themed green */
             margin-top: 30px;
             margin-bottom: 20px;
             font-size: 1.8em;
-            border-bottom: 2px solid #28a745;
+            border-bottom: 2px solid var(--medium-gray); /* Themed green border */
             padding-bottom: 8px;
-            display: inline-block;
+            display: flex; /* Use flex for icon alignment */
+            align-items: center;
+            gap: 10px; /* Space between icon and text */
         }
+        .section-title i {
+            font-size: 1.2em;
+        }
+
 
         .booking-request-card,
         .accepted-booking-card {
-            background-color: #fff;
-            border: 1px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 20px;
+            background-color: var(--light-green); /* Light green background for cards */
+            border: 1px solid rgba(40, 167, 69, 0.1); /* Subtle green border */
+            border-radius: var(--card-radius); /* Consistent border-radius */
+            padding: 25px; /* Increased padding */
             margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            box-shadow: var(--shadow); /* Consistent shadow */
+            transition: var(--transition); /* Consistent transition */
+        }
+
+        .booking-request-card:hover,
+        .accepted-booking-card:hover {
+            transform: translateY(-5px); /* Consistent hover effect */
+            box-shadow: var(--shadow-hover); /* Consistent hover shadow */
         }
 
         .booking-request-card h3,
         .accepted-booking-card h3 {
-            color: #007bff;
+            color: var(--primary-blue); /* Themed blue for booking ID/date */
             margin-top: 0;
-            margin-bottom: 10px;
-            font-size: 1.5em;
+            margin-bottom: 15px; /* Increased margin */
+            font-size: 1.6em; /* Slightly larger heading */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
         }
 
         .booking-request-card p,
         .accepted-booking-card p {
-            margin: 5px 0;
-            color: #555;
+            margin: 8px 0; /* Adjusted margin */
+            color: var(--dark); /* Consistent dark text */
+            line-height: 1.6; /* Improved readability */
+            font-size: 1.05em; /* Slightly larger text */
         }
 
         .booking-request-card p strong,
         .accepted-booking-card p strong {
-            color: #333;
+            color: var(--dark); /* Stronger dark color */
         }
 
         .booking-actions {
             margin-top: 15px;
             display: flex;
-            gap: 10px;
+            flex-wrap: wrap; /* Allow wrapping on small screens */
+            gap: 10px; /* Space between buttons */
+            justify-content: flex-end; /* Align actions to the right */
+        }
+
+        /* Buttons consistent with dashboard */
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px; /* Consistent border-radius */
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-block;
+            border: none;
+            text-align: center;
         }
 
         .btn-accept {
-            background-color: #28a745;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: background-color 0.3s ease;
+            background-color: var(--success); /* Green for accept */
+            color: var(--white);
         }
         .btn-accept:hover {
-            background-color: #218838;
+            background-color: var(--secondary-green);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         }
 
         .btn-call-user {
-            background-color: #ffc107;
-            color: #333;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: background-color 0.3s ease;
-            text-decoration: none; /* For the <a> tag */
-            display: inline-block; /* To allow padding */
+            background-color: var(--info); /* Blue for call/email */
+            color: var(--white);
         }
         .btn-call-user:hover {
-            background-color: #e0a800;
+            background-color: #117a8b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         }
 
         .no-bookings {
             text-align: center;
             padding: 30px;
             font-size: 1.1em;
-            color: #666;
+            color: var(--dark-gray); /* Themed gray */
+            background-color: var(--light-gray);
+            border-radius: var(--card-radius);
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.05); /* Subtle inner shadow */
         }
 
         .logout-btn {
-            background-color: #dc3545;
-            margin-top: 20px;
+            background-color: var(--danger); /* Red for logout */
+            color: var(--white);
+            margin-top: 30px; /* Space from last section */
+            width: auto; /* Allow button to size itself */
+            display: block; /* Make it block level */
+            margin-left: auto; /* Center horizontally if block */
+            margin-right: auto;
+            max-width: 200px; /* Max width for button */
         }
         .logout-btn:hover {
             background-color: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
 
         .status-badge {
-            padding: 5px 10px;
-            border-radius: 5px;
+            padding: 6px 12px; /* Consistent padding */
+            border-radius: 20px; /* More rounded pill shape */
             font-weight: bold;
             text-transform: capitalize;
-            font-size: 0.9em;
+            font-size: 0.95em; /* Slightly larger font */
             display: inline-block;
-            margin-left: 10px;
+            margin-left: 10px; /* Space from text */
+            color: var(--white); /* White text for all status badges by default */
         }
-        .status-badge.pending { background-color: #ffc107; color: #333; }
-        .status-badge.confirmed { background-color: #28a745; color: white; }
-        .status-badge.completed { background-color: #6c757d; color: white; }
-        .status-badge.cancelled { background-color: #dc3545; color: white; }
+        .status-badge.pending { background-color: var(--warning); color: var(--dark); } /* Yellow background, dark text */
+        .status-badge.confirmed { background-color: var(--success); }
+        .status-badge.completed { background-color: var(--dark-gray); } /* Dark gray for completed */
+        .status-badge.cancelled { background-color: var(--danger); }
+
+
+        /* Alert messages */
+        .alert {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            font-size: 15px;
+            text-align: left;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .alert-danger {
+            background-color: var(--danger);
+            color: var(--white);
+            border: 1px solid var(--danger);
+        }
+
+        .alert-success {
+            background-color: var(--success);
+            color: var(--white);
+            border: 1px solid var(--success);
+        }
 
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .driver-dashboard-container {
-                margin: 20px;
-                padding: 15px;
+                margin: 15px auto;
+                padding: 20px;
+            }
+            .driver-dashboard-container h2 {
+                font-size: 1.8em;
+                margin-bottom: 20px;
+            }
+            .section-title {
+                font-size: 1.5em;
+                margin-top: 25px;
+            }
+            .booking-request-card,
+            .accepted-booking-card {
+                padding: 20px;
+            }
+            .booking-request-card h3,
+            .accepted-booking-card h3 {
+                flex-direction: column;
+                align-items: flex-start;
+                font-size: 1.4em;
+                margin-bottom: 10px;
+            }
+            .booking-request-card .status-badge,
+            .accepted-booking-card .status-badge {
+                margin-top: 8px;
+                margin-left: 0;
             }
             .booking-actions {
                 flex-direction: column;
+                align-items: flex-start; /* Align actions to the left */
                 gap: 10px;
             }
             .btn-accept, .btn-call-user {
-                width: 100%;
+                width: 100%; /* Full width buttons */
                 text-align: center;
+            }
+            .no-bookings {
+                padding: 20px;
+                font-size: 1em;
+            }
+            .logout-btn {
+                width: 100%;
+                max-width: none; /* Remove max-width on smaller screens */
+            }
+        }
+
+        @media (max-width: 480px) {
+            .driver-dashboard-container {
+                padding: 15px;
+                margin: 10px auto;
+            }
+            .driver-dashboard-container h2 {
+                font-size: 1.6em;
+            }
+            .section-title {
+                font-size: 1.3em;
+            }
+            .booking-request-card,
+            .accepted-booking-card {
+                padding: 15px;
+            }
+            .booking-request-card h3,
+            .accepted-booking-card h3 {
+                font-size: 1.2em;
+            }
+            .booking-request-card p,
+            .accepted-booking-card p {
+                font-size: 1em;
+                margin: 6px 0;
+            }
+            .btn-accept, .btn-call-user {
+                font-size: 0.9em;
+                padding: 8px 15px;
             }
         }
     </style>
 </head>
 <body>
     <div class="container driver-dashboard-container">
-        <h2>Welcome, Driver <?php echo htmlspecialchars($_SESSION['driver_name']); ?>!</h2>
+        <h2><i class="fas fa-id-badge"></i> Welcome, Driver <?php echo htmlspecialchars($_SESSION['driver_name']); ?>!</h2>
         <p>Manage your booking requests and view your accepted jobs here.</p>
 
         <?php if (!empty($success_message)): ?>
@@ -244,11 +435,11 @@ mysqli_close($conn);
             <div class="alert alert-danger"><?php echo $error_message; ?></div>
         <?php endif; ?>
 
-        <h3 class="section-title">New Booking Requests (Pending)</h3>
+        <h3 class="section-title"><i class="fas fa-clock"></i> New Booking Requests (Pending)</h3>
         <?php if (!empty($pending_bookings)): ?>
             <?php foreach ($pending_bookings as $booking): ?>
                 <div class="booking-request-card">
-                    <h3>Booking ID: <?php echo htmlspecialchars($booking['booking_id']); ?> for <?php echo htmlspecialchars($booking['booking_date']); ?></h3>
+                    <h3>Booking ID: <?php echo htmlspecialchars($booking['booking_id']); ?> for <?php echo date('F j, Y', strtotime($booking['booking_date'])); ?></h3>
                     <p><strong>User:</strong> <?php echo htmlspecialchars($booking['user_name']); ?></p>
                     <p><strong>User Email:</strong> <?php echo htmlspecialchars($booking['user_email']); ?></p>
                     <?php if (!empty($booking['message'])): ?>
@@ -257,40 +448,40 @@ mysqli_close($conn);
                     <div class="booking-actions">
                         <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post">
                             <input type="hidden" name="booking_id" value="<?php echo htmlspecialchars($booking['booking_id']); ?>">
-                            <button type="submit" name="accept_booking" class="btn-accept">Accept Booking</button>
+                            <button type="submit" name="accept_booking" class="btn btn-accept"><i class="fas fa-check-circle"></i> Accept Booking</button>
                         </form>
-                        <a href="mailto:<?php echo htmlspecialchars($booking['user_email']); ?>" class="btn-call-user" style="background-color: #17a2b8;">✉️ Email User</a>
-                        </div>
+                        <a href="mailto:<?php echo htmlspecialchars($booking['user_email']); ?>" class="btn btn-call-user"><i class="fas fa-envelope"></i> Email User</a>
+                    </div>
                 </div>
             <?php endforeach; ?>
         <?php else: ?>
-            <p class="no-bookings">No new pending booking requests at the moment.</p>
+            <p class="no-bookings">No new pending booking requests at the moment. Good job!</p>
         <?php endif; ?>
 
-        <h3 class="section-title">Your Accepted Bookings</h3>
+        <h3 class="section-title"><i class="fas fa-list-alt"></i> Your Accepted Bookings</h3>
         <?php if (!empty($accepted_bookings)): ?>
             <?php foreach ($accepted_bookings as $booking): ?>
                 <div class="accepted-booking-card">
                     <h3>
-                        Booking ID: <?php echo htmlspecialchars($booking['booking_id']); ?> on <?php echo htmlspecialchars($booking['booking_date']); ?>
-                        <span class="status-badge <?php echo htmlspecialchars($booking['status']); ?>"><?php echo htmlspecialchars($booking['status']); ?></span>
+                        Booking ID: <?php echo htmlspecialchars($booking['booking_id']); ?> on <?php echo date('F j, Y', strtotime($booking['booking_date'])); ?>
+                        <span class="status-badge <?php echo strtolower(htmlspecialchars($booking['status'])); ?>"><?php echo htmlspecialchars($booking['status']); ?></span>
                     </h3>
                     <p><strong>User:</strong> <?php echo htmlspecialchars($booking['user_name']); ?></p>
                     <p><strong>User Email:</strong> <?php echo htmlspecialchars($booking['user_email']); ?></p>
                     <?php if (!empty($booking['message'])): ?>
                         <p><strong>Message:</strong> <?php echo nl2br(htmlspecialchars($booking['message'])); ?></p>
                     <?php endif; ?>
-                     <div class="booking-actions">
-                        <a href="mailto:<?php echo htmlspecialchars($booking['user_email']); ?>" class="btn-call-user" style="background-color: #17a2b8;">✉️ Email User</a>
-                        </div>
+                    <div class="booking-actions">
+                         <a href="mailto:<?php echo htmlspecialchars($booking['user_email']); ?>" class="btn btn-call-user"><i class="fas fa-envelope"></i> Email User</a>
+                    </div>
                 </div>
             <?php endforeach; ?>
         <?php else: ?>
-            <p class="no-bookings">You have no accepted or past bookings yet.</p>
+            <p class="no-bookings">You have no accepted or past bookings yet. Go accept some requests!</p>
         <?php endif; ?>
 
         <p>
-            <a href="logout.php" class="btn logout-btn">Logout</a>
+            <a href="logout.php" class="btn logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
         </p>
     </div>
 </body>

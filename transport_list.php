@@ -82,26 +82,46 @@ if ($stmt = mysqli_prepare($conn, $sql)) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Transport Services - AgroConnect</title>
-    <link rel="stylesheet" href="css/style.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* Specific styles for transport list page */
-        .transport-list-container {
-            max-width: 1000px;
-            margin: 30px auto;
-            padding: 25px;
-            background-color: #fcfcfc;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        /* General page styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container.transport-list-container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             text-align: left;
         }
 
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        /* Filter section */
         .filters-section {
             display: flex;
             flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #ecf0f1;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
             align-items: flex-end;
         }
 
@@ -112,145 +132,207 @@ if ($stmt = mysqli_prepare($conn, $sql)) {
 
         .filter-group label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-weight: bold;
-            color: #444;
+            color: #555;
+            font-size: 0.9em;
         }
 
         .filters-section select,
-        .filters-section button {
+        .filters-section .btn {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
             font-size: 16px;
             box-sizing: border-box;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
         }
 
-        .filters-section button {
-            background-color: #007bff;
+        .filters-section select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 18px;
+            cursor: pointer;
+        }
+
+        .filters-section .btn {
+            background-color: #27ae60;
             color: white;
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            font-weight: bold;
+            text-transform: uppercase;
         }
 
-        .filters-section button:hover {
-            background-color: #0056b3;
-            transform: translateY(-1px);
+        .filters-section .btn:hover {
+            background-color: #229954;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
+        .filters-section .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Driver cards */
         .driver-cards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 25px;
             margin-top: 20px;
         }
 
         .driver-card {
-            background-color: white;
+            background-color: #ffffff;
             border: 1px solid #e0e0e0;
             border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease; /* Animation on hover */
+            padding: 25px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
             display: flex;
             flex-direction: column;
-            justify-content: space-between; /* Pushes buttons to the bottom */
+            justify-content: space-between;
         }
 
         .driver-card:hover {
-            transform: translateY(-5px); /* Subtle lift */
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
         }
 
         .driver-card h3 {
-            color: #28a745;
+            color: #16a085;
             margin-top: 0;
-            margin-bottom: 10px;
-            font-size: 1.6em;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
         }
 
         .driver-card p {
-            margin: 5px 0;
+            margin: 8px 0;
             color: #555;
-            font-size: 0.95em;
+            font-size: 1em;
         }
 
         .driver-card .details span {
             font-weight: bold;
-            color: #333;
+            color: #2c3e50;
+        }
+        
+        .vehicle-icon {
+             font-size: 1.2em;
+             margin-right: 8px;
+             color: #3498db;
         }
 
-        .driver-card .charge {
+        .location-icon {
             font-size: 1.2em;
+            margin-right: 8px;
+            color: #e67e22;
+        }
+        
+        .charge {
+            font-size: 1.4em;
             font-weight: bold;
-            color: #007bff;
+            color: #3498db;
             margin-top: 15px;
             margin-bottom: 20px;
+            border-top: 2px solid #ecf0f1;
+            padding-top: 15px;
         }
 
         .card-actions {
             margin-top: 20px;
             display: flex;
-            gap: 10px;
+            gap: 15px;
             flex-wrap: wrap;
         }
 
         .card-actions .btn {
-            flex: 1; /* Make buttons expand to fill space */
-            min-width: 120px; /* Ensure minimum width */
-            padding: 10px 15px;
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 18px;
             font-size: 0.95em;
             text-align: center;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
         .btn-call {
-            background-color: #ffc107; /* Yellow for call */
-            color: #333;
+            background-color: #e67e22;
+            color: white;
         }
 
         .btn-call:hover {
-            background-color: #e0a800;
+            background-color: #d35400;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
         .btn-book {
-            background-color: #28a745; /* Green for book */
+            background-color: #2ecc71;
+            color: white;
         }
 
         .btn-book:hover {
-            background-color: #218838;
+            background-color: #27ae60;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
         .no-results {
             text-align: center;
-            padding: 30px;
-            font-size: 1.1em;
-            color: #666;
+            padding: 50px;
+            font-size: 1.2em;
+            color: #95a5a6;
+            grid-column: 1 / -1;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+        }
+        a{
+            text-decoration:none;
+        }
+        .back-buttons-container {
+            text-align: center;
+            margin-top: 30px;
         }
 
         .btn-back-dashboard {
-            display: inline-block;
-            margin-top: 20px;
-            background-color:rgb(6, 226, 17);
-            height:20px;
-            width:auto;
-            padding:10px;
-             border-radius: 10px;
-             color:white;
+            background-color: #34495e;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            margin: 0 10px;
         }
-        a:link {
-  text-decoration: none;
-}
 
         .btn-back-dashboard:hover {
-            background-color:rgb(4, 102, 4);
+            background-color: #2c3e50;
+        }
+        
+        .btn-logout {
+            background-color: #e74c3c;
+        }
+
+        .btn-logout:hover {
+            background-color: #c0392b;
         }
 
         /* Responsive adjustments */
         @media (max-width: 768px) {
-            .transport-list-container {
+            .container.transport-list-container {
                 margin: 20px;
-                padding: 15px;
+                padding: 20px;
             }
             .filters-section {
                 flex-direction: column;
@@ -260,10 +342,11 @@ if ($stmt = mysqli_prepare($conn, $sql)) {
                 min-width: unset;
             }
             .driver-cards-grid {
-                grid-template-columns: 1fr; /* Single column for small screens */
+                grid-template-columns: 1fr;
             }
             .card-actions .btn {
-                width: 100%; /* Full width buttons on small screens */
+                width: 100%;
+                min-width: unset;
             }
         }
     </style>
@@ -309,8 +392,8 @@ if ($stmt = mysqli_prepare($conn, $sql)) {
                     <div class="driver-card">
                         <div>
                             <h3><?php echo htmlspecialchars($driver['name']); ?></h3>
-                            <p class="details">Vehicle: <span><?php echo htmlspecialchars($driver['vehicle_type']); ?></span></p>
-                            <p class="details">Location: <span><?php echo htmlspecialchars($driver['location']); ?>, <?php echo htmlspecialchars($driver['district']); ?></span></p>
+                            <p class="details"><i class="fas fa-truck vehicle-icon"></i>Vehicle: <span><?php echo htmlspecialchars($driver['vehicle_type']); ?></span></p>
+                            <p class="details"><i class="fas fa-map-marker-alt location-icon"></i>Location: <span><?php echo htmlspecialchars($driver['location']); ?>, <?php echo htmlspecialchars($driver['district']); ?></span></p>
                             <p class="details">Age: <span><?php echo htmlspecialchars($driver['age']); ?> years</span></p>
                             <p class="charge">Service Charge: ₹<?php echo htmlspecialchars(number_format($driver['charge'], 2)); ?></p>
                         </div>
@@ -327,10 +410,10 @@ if ($stmt = mysqli_prepare($conn, $sql)) {
             <?php endif; ?>
         </div>
 
-        <p>
+        <div class="back-buttons-container">
             <a href="user_dashboard.php" class="btn btn-back-dashboard">Back to Dashboard</a>
-            <a href="logout.php" class="btn btn-back-dashboard" style="background-color: #dc3545;">Logout</a>
-        </p>
+            <a href="logout.php" class="btn btn-back-dashboard btn-logout">Logout</a>
+        </div>
     </div>
 </body>
 </html>

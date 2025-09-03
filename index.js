@@ -65,3 +65,22 @@
             });
         });
    
+
+
+
+         // Responsive Navbar Toggle
+            document.addEventListener('DOMContentLoaded', function() {
+                const menuBtn = document.getElementById('mobileMenuBtn');
+                const navLinks = document.getElementById('navLinks');
+                if(menuBtn && navLinks) {
+                    menuBtn.addEventListener('click', function() {
+                        navLinks.classList.toggle('open');
+                    });
+                    // Optional: Close menu on link click (mobile)
+                    navLinks.querySelectorAll('a').forEach(link => {
+                        link.addEventListener('click', () => {
+                            if(window.innerWidth <= 900) navLinks.classList.remove('open');
+                        });
+                    });
+                }
+            });
