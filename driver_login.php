@@ -12,16 +12,16 @@ if (isset($_SESSION['driver_id']) && $_SESSION['driver_id'] !== '') {
 require_once 'config.php';
 
 // Initialize variables
-$phone_number = $password = '';
-$phone_number_err = $password_err = $login_err = '';
+$login_input = $password = '';
+$login_input_err = $password_err = $login_err = '';
 
 // Process form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Validate phone number
-    if (empty(trim($_POST['phone_number']))) {
-        $phone_number_err = 'Please enter your phone number.';
+    // Validate login input (phone number or email)
+    if (empty(trim($_POST['login_input']))) {
+        $login_input_err = 'Please enter your phone number or email.';
     } else {
-        $phone_number = trim($_POST['phone_number']);
+        $login_input = trim($_POST['login_input']);
     }
 
     // Validate password
@@ -32,16 +32,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     // Validate credentials
-    if (empty($phone_number_err) && empty($password_err)) {
-        $sql = 'SELECT id, name, phone_number, password FROM drivers WHERE phone_number = ?';
+    if (empty($login_input_err) && empty($password_err)) {
+        // Check if input is email or phone number
+        $is_email = filter_var($login_input, FILTER_VALIDATE_EMAIL);
+        
+        if ($is_email) {
+            // Login with email
+            $sql = 'SELECT id, name, phone_number, password FROM drivers WHERE email = ?';
+        } else {
+            // Login with phone number
+            $sql = 'SELECT id, name, phone_number, password FROM drivers WHERE phone_number = ?';
+        }
+        
         if ($stmt = mysqli_prepare($conn, $sql)) {
-            mysqli_stmt_bind_param($stmt, 's', $param_phone_number);
-            $param_phone_number = $phone_number;
+            mysqli_stmt_bind_param($stmt, 's', $param_login_input);
+            $param_login_input = $login_input;
 
             if (mysqli_stmt_execute($stmt)) {
                 mysqli_stmt_store_result($stmt);
 
-                // Check if phone number exists, then verify password
+                // Check if account exists, then verify password
                 if (mysqli_stmt_num_rows($stmt) == 1) {
                     mysqli_stmt_bind_result($stmt, $id, $name, $phone_number, $hashed_password);
                     if (mysqli_stmt_fetch($stmt)) {
@@ -57,12 +67,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             exit();
                         } else {
                             // Password is not valid
-                            $login_err = 'Invalid phone number or password.';
+                            $login_err = 'Invalid login credentials.';
                         }
                     }
                 } else {
-                    // Phone number doesn't exist
-                    $login_err = 'Invalid phone number or password.';
+                    // Account doesn't exist
+                    $login_err = 'Invalid login credentials.';
                 }
             } else {
                 echo 'Oops! Something went wrong. Please try again later.';
@@ -75,7 +85,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     mysqli_close($conn);
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -344,6 +353,45 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             border-radius: 50%;
             border: 3px solid var(--primary-brown);
         }
+        .login-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--light-brown);
+        }
+        
+        .login-tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            border-bottom: 3px solid transparent;
+        }
+        
+        .login-tab.active {
+            border-bottom: 3px solid var(--primary-green);
+            color: var(--primary-green);
+            font-weight: 600;
+        }
+        
+        .login-tab:hover {
+            background-color: var(--light-green);
+        }
+        
+        .login-form {
+            display: none;
+        }
+        
+        .login-form.active {
+            display: block;
+        }
+        
+        .login-type-note {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+            color: var(--secondary-brown);
+        }
     </style>
 </head>
 <body>
@@ -355,25 +403,58 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <?php if (!empty($login_err)): ?>
             <div class="alert alert-danger"><?php echo $login_err; ?></div>
         <?php endif; ?>
-        <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post">
+        
+        <div class="login-tabs">
+            <div class="login-tab active" id="phone-tab">Phone Login</div>
+            <div class="login-tab" id="email-tab">Email Login</div>
+        </div>
+        
+        <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post" id="login-form">
             <div class="form-group">
-                <label for="phone_number">Phone Number</label>
-                <input type="text" name="phone_number" id="phone_number" class="form-control <?php echo (!empty($phone_number_err)) ? 'is-invalid' : ''; ?>" value="<?php echo $phone_number; ?>" placeholder="Enter your phone number">
-                <span class="alert-danger"><?php echo $phone_number_err; ?></span>
+                <label for="login_input" id="login-label">Phone Number</label>
+                <input type="text" name="login_input" id="login_input" class="form-control <?php echo (!empty($login_input_err)) ? 'is-invalid' : ''; ?>" value="<?php echo $login_input; ?>" placeholder="Enter your phone number">
+                <span class="alert-danger"><?php echo $login_input_err; ?></span>
             </div>
             <div class="form-group">
                 <label for="password">Password</label>
                 <input type="password" name="password" id="password" class="form-control <?php echo (!empty($password_err)) ? 'is-invalid' : ''; ?>" placeholder="Enter your password">
                 <span class="alert-danger"><?php echo $password_err; ?></span>
-               
             </div>
             <div class="form-group">
                 <input type="submit" class="btn" value="Login">
             </div>
-            <p class="link-text">Don't have an account? <a href="driver_register.php">Register now</a>.</p>
         </form>
+        
+        <p class="login-type-note" id="login-note">Login using your registered phone number</p>
+        
+        <p class="link-text">Don't have an account? <a href="driver_register.php">Register now</a>.</p>
+        <p class="link-text">Forgot your password? <a href="d_forgot_password.php">Reset here</a>.</p>
     </div>
 
-    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const phoneTab = document.getElementById('phone-tab');
+            const emailTab = document.getElementById('email-tab');
+            const loginInput = document.getElementById('login_input');
+            const loginLabel = document.getElementById('login-label');
+            const loginNote = document.getElementById('login-note');
+            
+            phoneTab.addEventListener('click', function() {
+                phoneTab.classList.add('active');
+                emailTab.classList.remove('active');
+                loginLabel.textContent = 'Phone Number';
+                loginInput.placeholder = 'Enter your phone number';
+                loginNote.textContent = 'Login using your registered phone number';
+            });
+            
+            emailTab.addEventListener('click', function() {
+                emailTab.classList.add('active');
+                phoneTab.classList.remove('active');
+                loginLabel.textContent = 'Email Address';
+                loginInput.placeholder = 'Enter your email address';
+                loginNote.textContent = 'Login using your registered email address';
+            });
+        });
+    </script>
 </body>
 </html>

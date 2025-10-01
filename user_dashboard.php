@@ -105,9 +105,9 @@ $transportOptions = [
             --light-blue: #e6f7ff;
             --white: #ffffff;
             --dark: #333333;
-            --light-gray: #f0f5f0; /* Body background from previous style */
+            --light-gray: #f8f9fa; /* Lighter background for better contrast */
             --medium-gray: #e0e0e0;
-            --dark-gray: #757575;
+            --dark-gray: #6c757d;
             --success: #28a745;
             --warning: #ffc107;
             --danger: #dc3545;
@@ -115,14 +115,16 @@ $transportOptions = [
             --transition: all 0.3s ease;
             --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             --shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.15);
-            --card-radius: 10px;
+            --card-radius: 12px;
+            --sidebar-width: 260px;
+            --sidebar-collapsed-width: 70px;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', sans-serif; /* Consistent font */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
@@ -130,20 +132,20 @@ $transportOptions = [
             color: var(--dark);
             line-height: 1.6;
             min-height: 100vh;
-            display: flex; /* For dashboard-wrapper */
+            display: flex;
         }
 
         .dashboard-wrapper {
             display: flex;
             width: 100%;
-            height: 100vh; /* Full viewport height */
-            overflow: hidden; /* Prevent body scroll, content areas will scroll */
+            min-height: 100vh;
+            overflow: hidden;
         }
 
         /* Sidebar Styles */
         .sidebar {
-            width: 250px;
-            background-color: var(--primary-green);
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, var(--primary-green) 0%, #1e7e34 100%);
             color: var(--white);
             padding: 20px 0;
             display: flex;
@@ -155,25 +157,72 @@ $transportOptions = [
             height: 100vh;
             overflow-y: auto;
             transition: width 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+
+        .sidebar.collapsed .sidebar-header h3,
+        .sidebar.collapsed .sidebar-header p,
+        .sidebar.collapsed .sidebar-menu span,
+        .sidebar.collapsed .logout-btn span {
+            display: none;
+        }
+
+        .sidebar.collapsed .sidebar-menu a {
+            justify-content: center;
+            padding: 12px 0;
+            border-radius: 0;
+        }
+
+        .sidebar.collapsed .sidebar-menu i {
+            margin-right: 0;
         }
 
         .sidebar-header {
             padding: 0 20px 20px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             margin-bottom: 20px;
-            text-align: center; /* Center header text */
+            text-align: center;
+            position: relative;
         }
 
         .sidebar-header h3 {
-            font-size: 1.8em; /* Adjusted to match your original plan */
+            font-size: 1.8em;
             font-weight: 600;
             margin-top: 10px;
-            margin-bottom: 5px; /* Added margin */
+            margin-bottom: 5px;
+            transition: opacity 0.3s ease;
         }
 
         .sidebar-header p {
-            font-size: 0.9em; /* Smaller role text */
+            font-size: 0.9em;
             opacity: 0.9;
+            transition: opacity 0.3s ease;
+        }
+
+        .toggle-sidebar {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .toggle-sidebar:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(180deg);
         }
 
         .sidebar-menu {
@@ -193,51 +242,71 @@ $transportOptions = [
             color: var(--white);
             text-decoration: none;
             transition: var(--transition);
-            font-size: 1.05em; /* Slightly adjusted font size */
-            border-radius: 0 25px 25px 0; /* Rounded right edge */
+            font-size: 1.05em;
+            border-radius: 0 25px 25px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar-menu a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .sidebar-menu a:hover::before {
+            left: 100%;
         }
 
         .sidebar-menu a:hover {
-            background-color: var(--secondary-green);
+            background-color: rgba(255, 255, 255, 0.1);
             transform: translateX(5px);
         }
 
-        /* The 'active' class logic removed as the dashboard is no longer including dynamic content */
-        /* .sidebar-menu a.active {
-            background-color: var(--primary-blue);
-            box-shadow: inset 3px 0 0 rgba(255, 255, 255, 0.5);
-        } */
+        .sidebar-menu a.active {
+            background-color: rgba(255, 255, 255, 0.15);
+            box-shadow: inset 3px 0 0 rgba(255, 255, 255, 0.8);
+        }
 
         .sidebar-menu i {
-            margin-right: 15px; /* Increased margin */
-            width: 25px; /* Fixed width for icons */
+            margin-right: 15px;
+            width: 25px;
             text-align: center;
             font-size: 1.3em;
+            transition: margin 0.3s ease;
         }
 
         .sidebar-footer {
-            margin-top: auto; /* Pushes logout to bottom */
+            margin-top: auto;
             padding: 20px;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
             text-align: center;
         }
 
         .logout-btn {
-            background-color: var(--danger); /* Red for logout */
+            background-color: rgba(220, 53, 69, 0.8);
             color: var(--white);
             padding: 12px 20px;
             border-radius: 8px;
             text-align: center;
             text-decoration: none;
-            display: block; /* Full width */
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: var(--transition);
+            gap: 10px;
         }
+
         .logout-btn:hover {
-            background-color: #c82333; /* Darker red on hover */
+            background-color: var(--danger);
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
-
 
         /* Main Content Styles */
         .main-content {
@@ -248,7 +317,12 @@ $transportOptions = [
             margin: 20px;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.08);
             overflow-y: auto;
-            max-height: calc(100vh - 40px); /* Adjust height to fit wrapper */
+            max-height: calc(100vh - 40px);
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
         }
 
         .header {
@@ -262,16 +336,25 @@ $transportOptions = [
 
         .header h1 {
             color: var(--dark);
-            font-size: 2.2em; /* Adjusted font size */
-            margin: 0; /* Reset margin */
+            font-size: 2.2em;
+            margin: 0;
+            font-weight: 600;
         }
 
         .user-profile {
             display: flex;
             align-items: center;
+            gap: 15px;
+            padding: 10px 15px;
+            background: var(--light-green);
+            border-radius: 8px;
+            transition: var(--transition);
         }
 
-        /* Removed .user-profile img as per the profile page design (just name/role) */
+        .user-profile:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+        }
 
         .user-profile .name {
             font-weight: 600;
@@ -284,19 +367,28 @@ $transportOptions = [
             color: var(--dark-gray);
         }
 
+        .welcome-message {
+            background: linear-gradient(135deg, var(--light-green) 0%, var(--light-blue) 100%);
+            padding: 15px 20px;
+            border-radius: var(--card-radius);
+            margin-bottom: 25px;
+            border-left: 4px solid var(--primary-green);
+            box-shadow: var(--shadow);
+        }
+
         /* Dashboard Cards for Stats (total vehicles, total bookings) */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Adjusted minmax */
-            gap: 20px; /* Reduced gap */
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
             margin-bottom: 30px;
         }
 
         .stat-card {
-            background-color: var(--light-green); /* Use light green for stats background */
-            border: 1px solid rgba(40, 167, 69, 0.1); /* Subtle border matching green */
+            background: linear-gradient(135deg, var(--white) 0%, #f8f9fa 100%);
+            border: 1px solid rgba(0, 0, 0, 0.05);
             border-radius: var(--card-radius);
-            padding: 20px; /* Reduced padding */
+            padding: 25px;
             text-align: center;
             box-shadow: var(--shadow);
             transition: var(--transition);
@@ -304,35 +396,46 @@ $transportOptions = [
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-green), var(--primary-blue));
         }
 
         .stat-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-7px);
             box-shadow: var(--shadow-hover);
         }
 
         .stat-card .icon {
-            font-size: 2.5em; /* Reduced icon size */
-            color: var(--primary-green); /* Use primary green for icons */
-            margin-bottom: 10px; /* Reduced margin */
-            animation: pulse 2s infinite ease-in-out;
+            font-size: 2.8em;
+            color: var(--primary-green);
+            margin-bottom: 15px;
+            transition: var(--transition);
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+        .stat-card:hover .icon {
+            transform: scale(1.1);
+            color: var(--primary-blue);
         }
 
         .stat-card .value {
-            font-size: 2em; /* Reduced value font size */
+            font-size: 2.2em;
             font-weight: bold;
-            color: var(--primary-blue); /* Use primary blue for values */
+            color: var(--primary-blue);
             margin-bottom: 5px;
         }
 
         .stat-card .label {
-            font-size: 1em; /* Reduced label font size */
+            font-size: 1em;
             color: var(--dark-gray);
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -341,44 +444,42 @@ $transportOptions = [
         /* Dashboard Sections (Recent Bookings, Market Prices, Transport Availability) */
         .dashboard-section-grid {
             display: grid;
-            grid-template-columns: 1fr; /* Default to single column */
+            grid-template-columns: 1fr;
             gap: 20px;
             margin-top: 30px;
         }
 
-        /* For larger screens, split into two columns if desired for Market Prices / Transport Availability */
         @media (min-width: 992px) {
             .dashboard-section-grid.two-columns {
-                grid-template-columns: 1fr 1fr; /* Example: Two columns for side-by-side tables */
+                grid-template-columns: 1fr 1fr;
             }
             .dashboard-section-grid.main-and-side {
-                 grid-template-columns: 2fr 1fr; /* For main table and quick actions */
+                 grid-template-columns: 2fr 1fr;
             }
         }
-
 
         .section-card {
             background-color: var(--white);
             border-radius: var(--card-radius);
-            padding: 20px;
+            padding: 25px;
             box-shadow: var(--shadow);
             transition: var(--transition);
-            margin:auto;
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
 
         .section-card:hover {
-            transform: translateY(-3px);
+            transform: translateY(-5px);
             box-shadow: var(--shadow-hover);
         }
 
         .section-title {
-            font-size: 1.4em; /* Adjusted font size */
+            font-size: 1.4em;
             font-weight: 600;
-            margin-bottom: 15px; /* Reduced margin */
+            margin-bottom: 20px;
             color: var(--primary-green);
             display: flex;
             align-items: center;
-            border-bottom: 1px dashed var(--medium-gray); /* Subtle border */
+            border-bottom: 1px dashed var(--medium-gray);
             padding-bottom: 10px;
         }
 
@@ -390,167 +491,149 @@ $transportOptions = [
         /* Table Styles */
         .table-responsive {
             overflow-x: auto;
-            margin-top: 15px; /* Space between title and table */
+            margin-top: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 500px; /* Ensure table is not too squished on small screens */
+            min-width: 500px;
         }
 
         th, td {
-            padding: 10px 12px; /* Reduced padding */
+            padding: 12px 15px;
             text-align: left;
             border-bottom: 1px solid var(--medium-gray);
-            font-size: 0.95em; /* Slightly smaller font */
+            font-size: 0.95em;
         }
 
         th {
             background-color: var(--light-green);
             color: var(--primary-green);
             font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        tr {
+            transition: var(--transition);
         }
 
         tr:hover {
-            background-color: var(--light-gray);
+            background-color: rgba(40, 167, 69, 0.05);
+            transform: scale(1.01);
         }
 
-        .status {
-            padding: 4px 8px; /* Reduced padding */
-            border-radius: 15px; /* Slightly less rounded */
-            font-size: 0.8em; /* Smaller font */
-            font-weight: 600;
-            text-transform: capitalize;
-            display: inline-block;
-        }
-
-        .status.completed {
-            background-color: rgba(40, 167, 69, 0.15); /* Stronger tint */
-            color: var(--success);
-        }
-
-        .status.pending {
-            background-color: rgba(255, 193, 7, 0.15);
-            color: var(--warning);
-        }
-
-        .status.cancelled {
-            background-color: rgba(220, 53, 69, 0.15);
-            color: var(--danger);
-        }
-
-        .card-change {
-            font-size: 0.9em; /* Smaller change text */
+        .price-change {
             display: flex;
             align-items: center;
-            gap: 5px; /* Space between icon and text */
+            gap: 5px;
+            font-weight: 600;
         }
 
-        .card-change.positive {
+        .price-change.positive {
             color: var(--success);
         }
 
-        .card-change.negative {
+        .price-change.negative {
             color: var(--danger);
-        }
-        .card-change i {
-            font-size: 0.8em; /* Smaller icon in change text */
-        }
-
-
-        .btn {
-            padding: 8px 15px; /* Reduced padding */
-            border-radius: 6px; /* Slightly less rounded */
-            font-size: 0.9em; /* Reduced font size */
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            text-decoration: none;
-            display: inline-block;
-            border: none;
-        }
-
-        .btn-sm {
-            padding: 4px 8px; /* Even smaller for sm */
-            font-size: 0.8em;
-        }
-
-        .btn-primary {
-            background-color: var(--primary-green);
-            color: var(--white);
-        }
-
-        .btn-primary:hover {
-            background-color: var(--secondary-green);
-        }
-
-        .btn-outline {
-            background-color: transparent;
-            border: 1px solid var(--primary-green);
-            color: var(--primary-green);
-        }
-
-        .btn-outline:hover {
-            background-color: var(--primary-green);
-            color: var(--white);
         }
 
         .view-all {
             display: block;
             text-align: right;
-            margin-top: 10px; /* Reduced margin */
-            color: var(--primary-blue); /* Changed to blue for consistency with links */
+            margin-top: 15px;
+            color: var(--primary-blue);
             font-size: 0.9em;
             font-weight: 500;
             text-decoration: none;
+            transition: var(--transition);
+            padding: 5px 0;
         }
 
         .view-all:hover {
             text-decoration: underline;
+            color: var(--secondary-blue);
+            transform: translateX(5px);
         }
 
         /* Quick Actions */
         .quick-actions-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); /* Adjusted for smaller cards */
-            gap: 25px;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 20px;
         }
 
         .action-card {
             background-color: var(--white);
             border-radius: var(--card-radius);
-            padding: 15px;
+            padding: 20px 15px;
             box-shadow: var(--shadow);
             text-align: center;
             transition: var(--transition);
             cursor: pointer;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .action-card:hover::before {
+            opacity: 1;
         }
 
         .action-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-7px) scale(1.03);
             box-shadow: var(--shadow-hover);
         }
 
         .action-icon {
-            width: 45px; /* Smaller icon container */
-            height: 45px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 10px;
+            margin: 0 auto 15px;
             color: var(--white);
-            font-size: 1.5em; /* Smaller icon font size */
+            font-size: 1.8em;
+            transition: var(--transition);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
-        .action-icon.market { background-color: var(--success); }
-        .action-icon.transport { background-color: var(--info); }
-        .action-icon.history { background-color: #8d6e63; /* Primary Brown */ }
-        .action-icon.profile { background-color: #ffc107; color: var(--dark); /* Warning color */ }
+        .action-card:hover .action-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .action-icon.market { 
+            background: linear-gradient(135deg, var(--success) 0%, #1e7e34 100%);
+        }
+        .action-icon.transport { 
+            background: linear-gradient(135deg, var(--info) 0%, #138496 100%);
+        }
+        .action-icon.history { 
+            background: linear-gradient(135deg, #8d6e63 0%, #6d4c41 100%);
+        }
+        .action-icon.profile { 
+            background: linear-gradient(135deg, var(--warning) 0%, #e0a800 100%);
+            color: var(--dark);
+        }
 
         .action-title {
-            font-size: 0.9em; /* Smaller title */
+            font-size: 0.95em;
             font-weight: 600;
             color: var(--dark);
         }
@@ -559,7 +642,6 @@ $transportOptions = [
         @media (max-width: 992px) {
             .dashboard-wrapper {
                 flex-direction: column;
-                height: auto;
             }
             .sidebar {
                 width: 100%;
@@ -569,8 +651,28 @@ $transportOptions = [
                 box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
                 border-radius: 0;
             }
+            .sidebar.collapsed {
+                width: 100%;
+            }
+            .sidebar.collapsed .sidebar-header h3,
+            .sidebar.collapsed .sidebar-header p,
+            .sidebar.collapsed .sidebar-menu span,
+            .sidebar.collapsed .logout-btn span {
+                display: block;
+            }
+            .sidebar.collapsed .sidebar-menu a {
+                justify-content: flex-start;
+                padding: 12px 20px;
+                border-radius: 0 25px 25px 0;
+            }
+            .sidebar.collapsed .sidebar-menu i {
+                margin-right: 15px;
+            }
             .sidebar-header {
                 margin-bottom: 15px;
+            }
+            .toggle-sidebar {
+                display: none;
             }
             .sidebar-menu {
                 display: flex;
@@ -624,10 +726,10 @@ $transportOptions = [
                 gap: 15px;
             }
             .stat-card {
-                padding: 15px;
+                padding: 20px;
             }
             .stat-card .icon {
-                font-size: 2em;
+                font-size: 2.2em;
             }
             .stat-card .value {
                 font-size: 1.8em;
@@ -639,13 +741,16 @@ $transportOptions = [
                 grid-template-columns: 1fr;
             }
             .section-card {
-                padding: 15px;
+                padding: 20px;
             }
             .section-title {
                 font-size: 1.2em;
             }
             table {
-                min-width: unset; /* Allow table to shrink on very small screens */
+                min-width: unset;
+            }
+            .quick-actions-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
             }
         }
 
@@ -658,30 +763,22 @@ $transportOptions = [
                 font-size: 1.6em;
             }
             .quick-actions-grid {
-                grid-template-columns: 1fr 1fr; /* 2 columns on small phones */
+                grid-template-columns: 1fr 1fr;
             }
             .action-card {
-                padding: 10px;
+                padding: 15px 10px;
             }
             .action-icon {
-                width: 40px;
-                height: 40px;
-                font-size: 1.3em;
+                width: 50px;
+                height: 50px;
+                font-size: 1.5em;
             }
             .action-title {
-                font-size: 0.8em;
+                font-size: 0.85em;
             }
             th, td {
-                padding: 8px 10px;
+                padding: 10px 12px;
                 font-size: 0.9em;
-            }
-            .status {
-                font-size: 0.75em;
-                padding: 3px 6px;
-            }
-            .btn {
-                font-size: 0.8em;
-                padding: 6px 12px;
             }
         }
     </style>
@@ -691,23 +788,26 @@ $transportOptions = [
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="sidebar-header">
+                <button class="toggle-sidebar" id="toggleSidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
                 <h3>AgroConnect</h3>
                 <p>User Dashboard</p>
             </div>
             <ul class="sidebar-menu">
-                <li><a href="user_dashboard.php" class="active"><i class="fas fa-th-large"></i> Dashboard</a></li>
-                <li><a href="market_prices.php"><i class="fas fa-chart-line"></i> Market Prices</a></li>
-                <li><a href="transport_list.php"><i class="fas fa-truck"></i> Find Transport</a></li>
-                <li><a href="user_history.php"><i class="fas fa-history"></i> My Bookings</a></li>
-                <li><a href="profile.php"><i class="fas fa-user-circle"></i> My Profile</a></li>
+                <li><a href="user_dashboard.php" class="active"><i class="fas fa-th-large"></i> <span>Dashboard</span></a></li>
+                <li><a href="market_prices.php"><i class="fas fa-chart-line"></i> <span>Market Prices</span></a></li>
+                <li><a href="transport_list.php"><i class="fas fa-truck"></i> <span>Find Transport</span></a></li>
+                <li><a href="user_history.php"><i class="fas fa-history"></i> <span>My Bookings</span></a></li>
+                <li><a href="profile.php"><i class="fas fa-user-circle"></i> <span>My Profile</span></a></li>
             </ul>
             <div class="sidebar-footer">
-                <a href="logout.php" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                <a href="logout.php" class="logout-btn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
             </div>
         </aside>
 
         <!-- Main Content Area -->
-        <main class="main-content">
+        <main class="main-content" id="mainContent">
             <div class="header">
                 <h1>Dashboard Overview</h1>
                 <div class="user-profile">
@@ -737,91 +837,19 @@ $transportOptions = [
             <!-- User-Specific Statistics Cards -->
             <div class="stats-grid" style="margin-top: 20px;">
                 <div class="stat-card">
-                    <div class="icon" style="color: var(--primary-blue);"><i class="fas fa-truck-ramp-box"></i></div>
+                    <div class="icon"><i class="fas fa-truck-ramp-box"></i></div>
                     <div class="value"><?php echo $available_vehicles_for_me; ?></div>
                     <div class="label">Vehicles Available</div>
                 </div>
                 <div class="stat-card">
-                    <div class="icon" style="color: var(--primary-blue);"><i class="fas fa-calendar-check"></i></div>
+                    <div class="icon"><i class="fas fa-calendar-check"></i></div>
                     <div class="value"><?php echo $my_total_bookings; ?></div>
                     <div class="label">My Total Bookings</div>
                 </div>
             </div>
 
             <!-- Main Dashboard Sections with Tables and Quick Actions -->
-            <div class="dashboard-section-grid main-and-side">
-                <!-- Left Column (now holds tables) -->
-                <div>
-                    <!-- Current Market Prices
-                    <div class="section-card">
-                        <div class="section-title">
-                            <i class="fas fa-shopping-basket"></i> Current Market Prices
-                        </div>
-                        <div class="table-responsive">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Product</th>
-                                        <th>Price</th>
-                                        <th>Change</th>
-                                        <th>Last Updated</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if (!empty($marketPrices)): ?>
-                                        <?php foreach ($marketPrices as $item): ?>
-                                        <tr>
-                                            <td><?php echo htmlspecialchars($item['product_name']); ?></td>
-                                            <td>₹<?php echo htmlspecialchars(number_format($item['price'], 2)); ?>/quintal</td>
-                                            <td class="price-change <?php echo (strpos($item['price_change'], '+') !== false) ? 'positive' : 'negative'; ?>">
-                                                <?php echo (strpos($item['price_change'], '+') !== false) ? '<i class="fas fa-arrow-up"></i>' : '<i class="fas fa-arrow-down"></i>'; ?>
-                                                <?php echo htmlspecialchars($item['price_change']); ?>
-                                            </td>
-                                            <td><?php echo date('M j, Y, g:i a', strtotime($item['last_updated'])); ?></td>
-                                        </tr>
-                                        <?php endforeach; ?>
-                                    <?php else: ?>
-                                        <tr><td colspan="4">No market prices available.</td></tr>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                        <a href="market_prices.php" class="view-all">View All Prices →</a>
-                    </div> -->
-
-                    <!-- Transport Availability 
-                    <div class="section-card" style="margin-top: 20px;">
-                        <div class="section-title">
-                            <i class="fas fa-truck-moving"></i> Transport Availability (Sample)
-                        </div>
-                        <div class="table-responsive">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Type</th>
-                                        <th>Availability</th>
-                                        <th>Rate</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if (!empty($transportOptions)): ?>
-                                        <?php foreach ($transportOptions as $option): ?>
-                                        <tr>
-                                            <td><?php echo htmlspecialchars($option['type']); ?></td>
-                                            <td><?php echo htmlspecialchars($option['availability']); ?></td>
-                                            <td><?php echo htmlspecialchars($option['rate']); ?></td>
-                                        </tr>
-                                        <?php endforeach; ?>
-                                    <?php else: ?>
-                                        <tr><td colspan="3">No transport options available.</td></tr>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                        <a href="transport_list.php" class="view-all">Book Transport →</a>
-                    </div>
-                </div>-->
-
+           
                 <!-- Right Column: Quick Actions and potentially other smaller widgets -->
                 <div>
                     <!-- Quick Actions -->
@@ -860,5 +888,35 @@ $transportOptions = [
             </div>
         </main>
     </div>
+
+    <script>
+        // Toggle sidebar collapse/expand
+        document.getElementById('toggleSidebar').addEventListener('click', function() {
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.getElementById('mainContent');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+            
+            // Change icon based on state
+            const icon = this.querySelector('i');
+            if (sidebar.classList.contains('collapsed')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-chevron-right');
+            } else {
+                icon.classList.remove('fa-chevron-right');
+                icon.classList.add('fa-bars');
+            }
+        });
+
+        // Add subtle animation to stat cards on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const statCards = document.querySelectorAll('.stat-card');
+            statCards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+                card.classList.add('fade-in-up');
+            });
+        });
+    </script>
 </body>
 </html>
