@@ -1,4 +1,15 @@
-admin_dashboard.php
-admin-login.php
+@"
+# PHP files to ignore
+admin_login.php
 config.php
-generate.php
+d_forgot_password.php
+d_reset_password.php
+forgot_password.php
+generate_hash.php
+private_contact_message.csv
+reset_password.php
+save_contact.php
+
+# Uploads folder
+/uploads/
+"@ | Out-File -Encoding UTF8 .gitignore
